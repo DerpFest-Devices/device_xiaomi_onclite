@@ -1,2 +1,2 @@
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/lineage_onclite.mk
+    $(LOCAL_DIR)/derp_onclite.mk

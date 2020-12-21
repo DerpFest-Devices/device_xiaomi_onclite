@@ -94,7 +94,7 @@ void check_device()
         heapgrowthlimit = "256m";
         heapsize = "512m";
         heaptargetutilization = "0.6";
-        heapminfree = "8m";
+        heapminfree = "4m";
         heapmaxfree = "16m";
     } else if (sys.totalram > 2048ull * 1024 * 1024) {
         // Set for 3GB RAM
@@ -103,7 +103,7 @@ void check_device()
         heapgrowthlimit = "192m";
         heapsize = "512m";
         heaptargetutilization = "0.75";
-        heapminfree = "512k";
+        heapminfree = "2m";
         heapmaxfree = "8m";
     } else {
         // Set for 2GB RAM
@@ -112,7 +112,7 @@ void check_device()
         heapgrowthlimit = "128m";
         heapsize = "256m";
         heaptargetutilization = "0.75";
-        heapminfree = "512k";
+        heapminfree = "2m";
         heapmaxfree = "8m";
     }
     

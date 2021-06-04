@@ -6,3 +6,6 @@ r_dir_file(system_server, keylayout_file);
 
 # Fingerprint
 get_prop(system_server, fp_prop);
+
+# Notch
+get_prop(system_server, vendor_display_notch_prop)

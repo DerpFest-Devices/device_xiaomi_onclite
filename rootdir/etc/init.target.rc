@@ -70,9 +70,6 @@ on post-fs-data
     mkdir /data/misc/audio_pp 0771 media audio
 
 on property:vendor.post_boot.parsed=1
-	# cpuset tuning
-    write /dev/cpuset/background/cpus 0-1
-
     # stune tweak
     write /dev/stune/foreground/schedtune.prefer_idle 1
     write /dev/stune/top-app/schedtune.prefer_idle 1

@@ -1,0 +1,10 @@
+[
+ {
+   "repository": "kernel_xiaomi_onclite",
+   "target_path": "kernel/xiaomi/onclite"
+ },
+ {
+   "repository": "vendor_xiaomi_onclite",
+   "target_path": "vendor/xiaomi/onclite"
+ }
+]

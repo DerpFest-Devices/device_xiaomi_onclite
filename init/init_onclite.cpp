@@ -36,6 +36,8 @@
 
 #include <android-base/properties.h>
 #define _REALLY_INCLUDE_SYS__SYSTEM_PROPERTIES_H_
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/_system_properties.h>
 
 #include "vendor_init.h"

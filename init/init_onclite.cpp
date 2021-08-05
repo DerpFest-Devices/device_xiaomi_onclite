@@ -164,7 +164,9 @@ void vendor_load_properties()
     property_override("dalvik.vm.heaptargetutilization", heaptargetutilization);
     property_override("dalvik.vm.heapminfree", heapminfree);
     property_override("dalvik.vm.heapmaxfree", heapmaxfree);
-    				
+
+    workaround_properties();
+
     string boot_cert = android::base::GetProperty("ro.boot.product.cert", "");
 
     if (boot_cert == "M1810F6LG" || boot_cert == "M1810F6LH" || boot_cert == "M1810F6LI"
@@ -172,6 +174,5 @@ void vendor_load_properties()
         load_props("onclite", "Redmi 7");
     else
         load_props("onc", "Redmi Y3");
-    workaround_properties();
 
 }

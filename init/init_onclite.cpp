@@ -144,7 +144,6 @@ void check_device()
         // set rest of Go tweaks for 2 GB
     if (sys.totalram < 2048ull * 1024 * 1024) {
         // set lowram options and enable traced by default
-        property_override("ro.config.low_ram", "true");
         property_override("persist.traced.enable", "true");
         property_override("ro.statsd.enable", "true");
         // set threshold to filter unused apps

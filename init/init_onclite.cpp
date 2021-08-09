@@ -28,7 +28,7 @@
  */
 
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <fstream>
 #include <string.h>
 #include <sys/sysinfo.h>
@@ -36,35 +36,16 @@
 
 #include <android-base/properties.h>
 #define _REALLY_INCLUDE_SYS__SYSTEM_PROPERTIES_H_
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/_system_properties.h>
 
 #include "vendor_init.h"
 #include "property_service.h"
-#include "android/log.h"
 
-char const *heapstartsize;
-char const *heapgrowthlimit;
-char const *heapsize;
-char const *heapminfree;
-char const *heapmaxfree;
-char const *heaptargetutilization;
-
+using android::base::GetProperty;
 using std::string;
 
-void property_override(char const prop[], char const value[], bool add = true)
+void property_override(string prop, string value)
 {
-    auto pi = (prop_info *) __system_property_find(prop);
-
-    if (pi != nullptr) {
-        __system_property_update(pi, value, strlen(value));
-    } else if (add) {
-        __system_property_add(prop, strlen(prop), value, strlen(value));
-    }
-}
-
-void property_set(string prop, string value) {
     auto pi = (prop_info*) __system_property_find(prop.c_str());
 
     if (pi != nullptr)
@@ -73,43 +54,37 @@ void property_set(string prop, string value) {
         __system_property_add(prop.c_str(), prop.size(), value.c_str(), value.size());
 }
 
-void load_props(string device, string model) {
-    string RO_PROP_SOURCES[] = { "", "odm.", "system.", "vendor." };
-
-    for (const string &source : RO_PROP_SOURCES) {
-        property_set(string("ro.product.") + source + string("name"), device);
-        property_set(string("ro.product.") + source + string("device"), device);
-        property_set(string("ro.product.") + source + string("model"), model);
-    }
-}
-
-/* From Magisk@jni/magiskhide/hide_policy.cpp */
-static const char *prop_key[] =
-        { "ro.boot.vbmeta.device_state", "ro.boot.verifiedbootstate", "ro.boot.flash.locked",
-          "ro.boot.veritymode", "ro.boot.warranty_bit", "ro.warranty_bit",
-          "ro.debuggable", "ro.secure", "ro.build.type", "ro.build.tags",
-          "ro.vendor.boot.warranty_bit", "ro.vendor.warranty_bit",
-          "vendor.boot.vbmeta.device_state", "vendor.boot.verifiedbootstate", nullptr };
-
-static const char *prop_val[] =
-        { "locked", "green", "1",
-          "enforcing", "0", "0",
-          "0", "1", "user", "release-keys",
-          "0", "0",
-          "locked", "green", nullptr };
-
-static void workaround_properties() {
-
-    // Hide all sensitive props
-    for (int i = 0; prop_key[i]; ++i) {
-        property_override(prop_key[i], prop_val[i], false);
-    }
-}
-
-void check_device()
+void vendor_load_properties()
 {
-    struct sysinfo sys;
+    string device, model, desc;
 
+    string region = GetProperty("ro.boot.hwcountry", "");
+    string hwversion = GetProperty("ro.boot.hwversion", "");
+
+    if (region == "India") {
+        device = "onc";
+        model = "Redmi Y3";
+    } else {
+        device = "onclite";
+        model = "Redmi 7";
+    }
+
+    // Override all partitions' props
+    string prop_partitions[] = { "", "odm.", "product.", "system.",
+                    "system_ext.", "bootimage.", "vendor." };
+
+    for (const string &prop : prop_partitions) {
+        property_override(string("ro.product.") + prop + string("name"), device);
+        property_override(string("ro.product.") + prop + string("device"), device);
+        property_override(string("ro.product.") + prop + string("model"), model);
+        property_override(string("ro.") + prop + string("build.product"), device);
+    }
+
+    // Set dalvik heap configuration
+    string heapstartsize, heapgrowthlimit, heapsize, heapminfree,
+            heapmaxfree, heaptargetutilization;
+
+    struct sysinfo sys;
     sysinfo(&sys);
 
     if (sys.totalram > 3072ull * 1024 * 1024) {
@@ -140,24 +115,6 @@ void check_device()
         heapminfree = "2m";
         heapmaxfree = "8m";
     }
-    
-        // set rest of Go tweaks for 2 GB
-    if (sys.totalram < 2048ull * 1024 * 1024) {
-        // set lowram options and enable traced by default
-        property_override("persist.traced.enable", "true");
-        property_override("ro.statsd.enable", "true");
-        // set threshold to filter unused apps
-        property_override("pm.dexopt.downgrade_after_inactive_days", "10");
-        // set the compiler filter for shared apks to quicken
-        property_override("pm.dexopt.shared", "quicken");
-	// set swap options
-	property_override("ro.vendor.qti.config.swap", "true");
-    }
-}
-
-void vendor_load_properties()
-{
-    check_device();
 
     property_override("dalvik.vm.heapstartsize", heapstartsize);
     property_override("dalvik.vm.heapgrowthlimit", heapgrowthlimit);
@@ -165,15 +122,5 @@ void vendor_load_properties()
     property_override("dalvik.vm.heaptargetutilization", heaptargetutilization);
     property_override("dalvik.vm.heapminfree", heapminfree);
     property_override("dalvik.vm.heapmaxfree", heapmaxfree);
-
-    workaround_properties();
-
-    string boot_cert = android::base::GetProperty("ro.boot.product.cert", "");
-
-    if (boot_cert == "M1810F6LG" || boot_cert == "M1810F6LH" || boot_cert == "M1810F6LI"
-            || boot_cert == "M1810F6LE" || boot_cert == "M1810F6LT" || boot_cert == "M1810F6LC")
-        load_props("onclite", "Redmi 7");
-    else
-        load_props("onc", "Redmi Y3");
 
 }

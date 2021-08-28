@@ -61,7 +61,7 @@ void vendor_load_properties()
     string region = GetProperty("ro.boot.hwcountry", "");
     string hwversion = GetProperty("ro.boot.hwversion", "");
 
-    if (region == "India") {
+    if (region == "India" && hwversion == "1.19.0") {
         device = "onc";
         model = "Redmi Y3";
     } else {
